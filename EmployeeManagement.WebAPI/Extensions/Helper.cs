@@ -6,5 +6,9 @@
         {
             return data != null && data.Count() > 0;
         }
+        public static bool HasValue(this IList<object> data)
+        {
+            return data != null && data.Count > 0;
+        }
     }
 }

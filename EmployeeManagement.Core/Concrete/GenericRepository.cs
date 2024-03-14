@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using EmployeeManagement.Core.Abstract;
 using EmployeeManagement.Infrastructure.Context;
+using System.Linq.Expressions;
 
 namespace EmployeeManagement.Core.Concrete;
 
@@ -47,5 +48,10 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
         _context.Update(entity);
         await _context.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> expression)
+    {
+        return await _context.Set<T>().FirstOrDefaultAsync(expression).ConfigureAwait(false);
     }
 }

@@ -113,5 +113,23 @@ namespace EmployeeManagement.WebAPI.Controllers
                 return BadRequest(new { IsSuccess = false, message = ex.Message });
             }
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody]LoginUserDto loginUserDto)
+        {
+            try
+            {
+                var user = await _userService.LoginAsync(loginUserDto.Username, loginUserDto.Password).ConfigureAwait(false);
+                if (user != null)
+                {
+                    return Ok(new { IsSuccess = true, data = user });
+                }
+                return Unauthorized(new { IsSuccess = false, message = "Geçersiz kullanıcı adı veya şifre." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { IsSuccess = false, message = ex.Message });
+            }
+        }
     }
 }

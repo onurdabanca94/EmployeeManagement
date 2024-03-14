@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,4 +16,5 @@ public interface IGenericRepository<T> where T : class
     Task UpdateAsync(T entity);
     Task DeleteAsync(T entity);
     IEnumerable<T> GetListByExpressionAsync(Func<T, bool> expression);
+    Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> expression);
 }

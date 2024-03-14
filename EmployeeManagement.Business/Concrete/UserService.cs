@@ -1,11 +1,7 @@
 ﻿using EmployeeManagement.Business.Abstract;
 using EmployeeManagement.Core.Abstract;
 using EmployeeManagement.DataAccess.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
 
 namespace EmployeeManagement.Business.Concrete;
 
@@ -40,7 +36,7 @@ public class UserService : IUserService
 
     public async Task<User?> GetByIdAsync(Guid id)
     {
-        return await _userRepository.GetByIdAsync(id).ConfigureAwait (false);
+        return await _userRepository.GetByIdAsync(id).ConfigureAwait(false);
     }
 
     public IEnumerable<User> GetListByExpressionAsync(Func<User, bool> expression)
@@ -51,5 +47,15 @@ public class UserService : IUserService
     public async Task UpdateAsync(User entity)
     {
         await _userRepository.UpdateAsync(entity).ConfigureAwait(false);
+    }
+
+    public async Task<User?> LoginAsync(string username, string password)
+    {
+        return await _userRepository.GetFirstOrDefaultAsync(u => u.Username == username && u.Password == password).ConfigureAwait(false);
+    }
+
+    public async Task<User?> GetFirstOrDefaultAsync(Expression<Func<User, bool>> expression)
+    {
+        return await _userRepository.GetFirstOrDefaultAsync(expression).ConfigureAwait(false);
     }
 }
