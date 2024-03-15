@@ -1,0 +1,215 @@
+﻿@section Style {
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn-edit {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+}
+
+<div class="row">
+
+    <div>
+        <div class="d-flex gap-3 align-items-center justify-content-between">
+            <h2>Departmanlar</h2>
+            <button class="btn btn-primary my-2" onclick="showAddDepartmentForm()">Departman Ekle</button>
+        </div>
+    </div>
+
+    <table id="department-table">
+        <thead>
+            <tr>
+                <th>Departman Id</th>
+                <th>Departman Adı</th>
+                <th>
+                    <div class="d-flex justify-content-end gap-2">
+                        İşlemler
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody id="department-table-body">
+        </tbody>
+
+    </table>
+
+    <!-- Departman Ekleme Formu -->
+    <div id="add-department-form" class="form-group mt-2" style="display: none;">
+        <div class="d-flex gap-3 align-items-center">
+            <input type="text" id="department-name" class="form-control" placeholder="Departman Adı">
+            <button class="btn btn-success" onclick="addDepartment()">Ekle</button>
+            <button class="btn btn-outline-secondary" onclick="hideAddDepartmentForm();">x</button>
+        </div>
+    </div>
+
+    <div id="edit-department-form" class="form-group mt-2" style="display:none;">
+        <div class="d-flex gap-3 align-items-center">
+            <input type="text" id="department-edit-name" class="form-control" placeholder="Departman Adı">
+            <button class="btn btn-success" id="update-btn">Güncelle</button>
+            <button class="btn btn-outline-secondary" onclick="hideAddDepartmentForm();">x</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showAddDepartmentForm() {
+            document.getElementById('add-department-form').style.display = 'block';
+            hideEditDepartmentForm();
+        }
+
+        function hideAddDepartmentForm() {
+            document.getElementById('add-department-form').style.display = 'none';
+        }
+
+        function showEditDepartmentForm() {
+            var editButton = event.target;
+            var departmentId = editButton.getAttribute('data-id');
+            var departmentName = editButton.getAttribute('data-name');
+
+            // Burada departmentId ve departmentName değerlerini kullanarak formu doldurabilir veya başka işlemler yapabilirsiniz
+
+            console.log('Department ID:', departmentId);
+            console.log('Department Name:', departmentName);
+
+            document.getElementById("department-edit-name").value = departmentName;
+
+            document.getElementById("update-btn").setAttribute("onclick", `editDepartment(${departmentId})`);
+
+            document.getElementById('edit-department-form').style.display = 'block';
+
+            hideAddDepartmentForm();
+        }
+
+        function hideEditDepartmentForm() {
+            document.getElementById('edit-department-form').style.display = 'none';
+        }
+
+        function addDepartment() {
+            var departmentName = document.getElementById('department-name').value;
+            post(`${BaseUrl}/api/Department/add-department`, { Name: departmentName }, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                document.getElementById('department-name').value = '';
+                hideAddDepartmentForm();
+                getAllDepartments();
+            }, function (error) {
+                alert('Departman güncellenirken bir hata oluştu.', error);
+            });
+
+
+
+            // var table = document.getElementById('department-table').getElementsByTagName('tbody')[0];
+            // var newRow = table.insertRow(table.rows.length);
+            // var cell1 = newRow.insertCell(0);
+            // var cell2 = newRow.insertCell(1);
+            // cell1.innerHTML = departmentName;
+            // cell2.innerHTML = '<button class="btn btn-edit" onclick="editDepartment()">Düzenle</button>' +
+            //     '<button class="btn btn-delete" onclick="deleteDepartment()">Sil</button>';
+        }
+
+        function editDepartment(departmentId) {
+            let departmentName = document.getElementById("department-edit-name").value;
+
+            post(`${BaseUrl}/api/Department/update-department`, { Id: departmentId, Name: departmentName }, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                alert('Departman güncellendi.');
+                console.log(data.data);
+                document.getElementById('department-name').value = '';
+                hideEditDepartmentForm();
+                getAllDepartments();
+            }, function (error) {
+                alert('Departman güncellenirken bir hata oluştu.', error);
+            });
+        }
+
+        function deleteDepartment(departmentId) {
+            post(`${BaseUrl}/api/Department/delete-department`, { Id: departmentId }, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                alert('Departman silindi.');
+                console.log(data.data);
+                document.getElementById('department-name').value = '';
+                hideAddDepartmentForm();
+                getAllDepartments();
+            }, function (error) {
+                alert('Departman silinirken bir hata oluştu.', error);
+            });
+        }
+
+        function getAllDepartments() {
+            post(`${BaseUrl}/api/Department/get-all-department`, {}, function (data) {
+                let departmentBody = document.getElementById("department-table-body");
+                if (!data.isSuccess) {
+                    departmentBody.innerHTML = '';
+                    alert(data.message);
+                    return;
+                }
+                console.log(data.data);
+                departmentBody.innerHTML = '';
+                data.data.forEach(function (x) {
+                    let departmentHtml = `<tr>
+                                                <td>${x.id}</td>
+                                                <td>${x.name}</td>
+                                                <td>
+                                                    <div class="d-flex justify-content-end gap-2">
+                                                                <button class="btn btn-edit" data-id='${x.id}' data-name='${x.name}' onclick="showEditDepartmentForm()">Düzenle</button>
+                                                        <button class="btn btn-delete" onclick="deleteDepartment(${x.id})">Sil</button>
+                                                    </div>
+                                                </td>
+                                            </tr>`;
+                    departmentBody.innerHTML += departmentHtml;
+                });
+
+                // document.getElementById("department-table-body").innerHTML = departmentBody;
+
+            }, function (error) {
+                alert('Departman listelenirken bir hata oluştu.', error);
+            });
+        }
+
+        window.addEventListener('load', function () {
+            if (document.cookie.indexOf("username") === -1) {
+                window.location.href = `@Url.Action("Login", "User")`;
+            }
+            getAllDepartments();
+        });
+
+
+
+    </script>
+}

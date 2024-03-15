@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/EmployeeManagement.UI.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Style", required: false)
 </head>
 <body>
     <header>
@@ -19,11 +20,17 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        <li class="nav-item" id="employee-url">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Employee" asp-action="Index">Employees</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <li class="nav-item" id="department-url">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Department" asp-action="Index">Departments</a>
+                        </li>
+                        <li class="nav-item" id="login-url">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Login">Login</a>
+                        </li>
+                        <li class="nav-item" id="logout-url">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="User" asp-action="Logout">Logout</a>
                         </li>
                     </ul>
                 </div>
@@ -44,6 +51,23 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/shared.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        window.addEventListener('load', function () {
+            if (document.cookie.indexOf("username") === -1) {
+                document.getElementById('login-url').style.display = 'block';
+                document.getElementById('logout-url').style.display = 'none';
+                document.getElementById('employee-url').style.display = 'none';
+                document.getElementById('department-url').style.display = 'none';
+            }
+            else {
+                document.getElementById('logout-url').style.display = 'block';
+                document.getElementById('employee-url').style.display = 'block';
+                document.getElementById('department-url').style.display = 'block';
+                document.getElementById('login-url').style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,255 @@
+﻿@section Style {
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn-edit {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+}
+
+<div class="row">
+
+    <div>
+        <div class="d-flex gap-3 align-items-center justify-content-between">
+            <h2>Çalışanlar</h2>
+            <button class="btn btn-primary my-2" onclick="showAddEmployeeForm()">Çalışan Ekle</button>
+        </div>
+    </div>
+
+    <table id="employee-table">
+        <thead>
+            <tr>
+                <th>Çalışan Id</th>
+                <th>Çalışan Adı</th>
+                <th>Departman Adı</th>
+                <th>
+                    <div class="d-flex justify-content-end gap-2">
+                        İşlemler
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody id="employee-table-body">
+        </tbody>
+
+    </table>
+
+    <!-- Çalışan Ekleme Formu -->
+    <div id="add-employee-form" class="form-group mt-2" style="display: none;">
+        <div class="d-flex gap-3 align-items-center">
+            <input type="text" id="employee-name" class="form-control" placeholder="Çalışan Adı">
+            <select id="department-list" class="form-control">
+            </select>
+            <button class="btn btn-success" onclick="addEmployee()">Ekle</button>
+            <button class="btn btn-outline-secondary" onclick="hideAddEmployeeForm();">x</button>
+        </div>
+    </div>
+
+    <div id="edit-employee-form" class="form-group mt-2" style="display:none;">
+        <div class="d-flex gap-3 align-items-center">
+            <input type="text" id="employee-edit-name" class="form-control" placeholder="Çalışan Adı">
+            <select id="department-edit-list" class="form-control">
+            </select>
+            <button class="btn btn-success" id="update-btn">Güncelle</button>
+            <button class="btn btn-outline-secondary" onclick="hideAddEmployeeForm();">x</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showAddEmployeeForm() {
+            document.getElementById('add-employee-form').style.display = 'block';
+            hideEditEmployeeForm();
+            getAllDepartments();
+        }
+
+        function hideAddEmployeeForm() {
+            document.getElementById('add-employee-form').style.display = 'none';
+        }
+
+        function showEditEmployeeForm() {
+            var editButton = event.target;
+            var employeeId = editButton.getAttribute('data-id');
+            var employeeName = editButton.getAttribute('data-name');
+            var departmentId = editButton.getAttribute('data-department-id');
+
+            console.log('Employee ID:', employeeId);
+            console.log('Employee Name:', employeeName);
+
+            document.getElementById("employee-edit-name").value = employeeName;
+
+            document.getElementById("update-btn").setAttribute("onclick", `editEmployee(${employeeId})`);
+
+            document.getElementById('edit-employee-form').style.display = 'block';
+
+            getAllDepartmentsWithSelectedId(departmentId);
+
+            hideAddEmployeeForm();
+        }
+
+        function hideEditEmployeeForm() {
+            document.getElementById('edit-employee-form').style.display = 'none';
+        }
+
+        function addEmployee() {
+            var employeeName = document.getElementById('employee-name').value;
+            var departmentId = document.getElementById('department-list').value;
+            post(`${BaseUrl}/api/Employee/create-employee`, { Name: employeeName, DepartmentId: departmentId }, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                document.getElementById('employee-name').value = '';
+                hideAddEmployeeForm();
+                getAllEmployees();
+            }, function (error) {
+                alert('Çalışan güncellenirken bir hata oluştu.', error);
+            });
+        }
+
+        function editEmployee(employeeId) {
+            let employeeName = document.getElementById("employee-edit-name").value;
+            let departmentId = document.getElementById('department-edit-list').value;
+
+            post(`${BaseUrl}/api/Employee/update-employee`, { Id: employeeId, Name: employeeName, departmentId: departmentId }, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                alert('Çalışan güncellendi.');
+                console.log(data.data);
+                document.getElementById('employee-name').value = '';
+                hideEditEmployeeForm();
+                getAllEmployees();
+            }, function (error) {
+                alert('Çalışan güncellenirken bir hata oluştu.', error);
+            });
+        }
+
+        function deleteEmployee(employeeId) {
+            post(`${BaseUrl}/api/Employee/delete-employee`, { Id: employeeId }, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                alert('Çalışan silindi.');
+                console.log(data.data);
+                document.getElementById('employee-name').value = '';
+                hideAddEmployeeForm();
+                getAllEmployees();
+            }, function (error) {
+                alert('Çalışan silinirken bir hata oluştu.', error);
+            });
+        }
+
+        function getAllEmployees() {
+            post(`${BaseUrl}/api/Employee/get-all-employee`, {}, function (data) {
+                let employeeBody = document.getElementById("employee-table-body");
+                if (!data.isSuccess) {
+                    employeeBody.innerHTML = '';
+                    alert(data.message);
+                    return;
+                }
+                console.log(data.data);
+                employeeBody.innerHTML = '';
+                data.data.forEach(function (x) {
+                    let employeeHtml = `<tr>
+                                                        <td>${x.id}</td>
+                                                        <td>${x.name}</td>
+                                                        <td>${x.departmentName}</td>
+                                                        <td>
+                                                            <div class="d-flex justify-content-end gap-2">
+                                                                        <button class="btn btn-edit" data-id='${x.id}' data-name='${x.name}' data-department-id='${x.departmentId}' onclick="showEditEmployeeForm()">Düzenle</button>
+                                                                <button class="btn btn-delete" onclick="deleteEmployee(${x.id})">Sil</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>`;
+                    employeeBody.innerHTML += employeeHtml;
+                });
+            }, function (error) {
+                alert('Çalışan listelenirken bir hata oluştu.', error);
+            });
+        }
+
+
+        function getAllDepartments() {
+            post(`${BaseUrl}/api/Department/get-all-department`, {}, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                console.log(data.data);
+                let departmentBody = document.getElementById("department-list");
+                departmentBody.innerHTML = '';
+                data.data.forEach(function (x) {
+                    let departmentHtml = `<option value=${x.id}>${x.name}</option>`;
+                    departmentBody.innerHTML += departmentHtml;
+                });
+
+            }, function (error) {
+                alert('Departman listelenirken bir hata oluştu.', error);
+            });
+        }
+
+        function getAllDepartmentsWithSelectedId(id) {
+            post(`${BaseUrl}/api/Department/get-all-department`, {}, function (data) {
+                if (!data.isSuccess) {
+                    alert(data.message);
+                    return;
+                }
+                console.log(data.data);
+                let departmentBody = document.getElementById("department-edit-list");
+                departmentBody.innerHTML = '';
+                data.data.forEach(function (x) {
+                    let departmentHtml = '';
+                    if (x.id === id) {
+                        departmentHtml = `<option value=${x.id} selected>${x.name}</option>`;
+                    }
+                    else{
+                        departmentHtml = `<option value=${x.id}>${x.name}</option>`;
+                    }
+                    departmentBody.innerHTML += departmentHtml;
+                });
+
+            }, function (error) {
+                alert('Departman listelenirken bir hata oluştu.', error);
+            });
+        }
+
+        window.addEventListener('load', function () {
+            if (document.cookie.indexOf("username") === -1) {
+                window.location.href = `@Url.Action("Login", "User")`;
+            }
+            getAllEmployees();
+        });
+
+    </script>
+}

@@ -3,9 +3,7 @@ using EmployeeManagement.Business.Abstract;
 using EmployeeManagement.DataAccess.Domain;
 using EmployeeManagement.WebAPI.Dtos.Employee;
 using EmployeeManagement.WebAPI.Extensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EmployeeManagement.WebAPI.Controllers
 {
@@ -46,7 +44,7 @@ namespace EmployeeManagement.WebAPI.Controllers
                 }
                 return new List<GetEmployeeWithDepartmentDto>();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return new List<GetEmployeeWithDepartmentDto>();
             }
@@ -79,7 +77,7 @@ namespace EmployeeManagement.WebAPI.Controllers
         }
 
         [HttpPost("get-employee")]
-        public async Task<IActionResult> GetEmployeeById([FromBody]GetEmployeeByIdDto getEmployeeByIdDto)
+        public async Task<IActionResult> GetEmployeeById([FromBody] GetEmployeeByIdDto getEmployeeByIdDto)
         {
             try
             {
@@ -109,7 +107,7 @@ namespace EmployeeManagement.WebAPI.Controllers
         }
 
         [HttpPost("get-employees-by-department-id")]
-        public async Task<IActionResult> GetEmployeesByDepartmentId([FromBody]GetEmployeesByDepartmentIdDto getEmployeesByDepartmentIdDto)
+        public async Task<IActionResult> GetEmployeesByDepartmentId([FromBody] GetEmployeesByDepartmentIdDto getEmployeesByDepartmentIdDto)
         {
             try
             {
@@ -135,8 +133,8 @@ namespace EmployeeManagement.WebAPI.Controllers
             }
         }
 
-        [HttpPost("create-parfume")]
-        public async Task<IActionResult> CreateEmployee([FromBody]CreateEmployeeDto createEmployeeDto)
+        [HttpPost("create-employee")]
+        public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeDto createEmployeeDto)
         {
             try
             {
@@ -156,8 +154,8 @@ namespace EmployeeManagement.WebAPI.Controllers
             }
         }
 
-        [HttpPost("update-parfume")]
-        public async Task<IActionResult> UpdateEmployee([FromBody]UpdateEmployeeDto updateEmployeeDto)
+        [HttpPost("update-employee")]
+        public async Task<IActionResult> UpdateEmployee([FromBody] UpdateEmployeeDto updateEmployeeDto)
         {
             try
             {
@@ -166,6 +164,13 @@ namespace EmployeeManagement.WebAPI.Controllers
                 {
                     return NotFound(new { IsSuccess = false, message = "Çalışan bulunamadı." });
                 }
+                var department = await _departmentService.GetByIdAsync(updateEmployeeDto.DepartmentId).ConfigureAwait(false);
+                if (department == null)
+                {
+                    return NotFound(new { IsSuccess = false, message = "Departman bulunamadı." });
+                }
+                foundData.DepartmentName = department;
+                foundData.DepartmentId = updateEmployeeDto.DepartmentId;
                 foundData.Name = updateEmployeeDto.Name;
                 await _employeeService.UpdateAsync(foundData).ConfigureAwait(false);
                 return Ok(new { IsSuccess = true });
@@ -177,7 +182,7 @@ namespace EmployeeManagement.WebAPI.Controllers
         }
 
         [HttpPost("delete-employee")]
-        public async Task<IActionResult> DeleteEmployee([FromBody]DeleteEmployeeDto deleteEmployeeDto)
+        public async Task<IActionResult> DeleteEmployee([FromBody] DeleteEmployeeDto deleteEmployeeDto)
         {
             try
             {
@@ -186,7 +191,7 @@ namespace EmployeeManagement.WebAPI.Controllers
                 {
                     return NotFound(new { IsSuccess = false, message = "Çalışan bulunamadı." });
                 }
-                await _employeeService.DeleteAsync(foundData).ConfigureAwait (false);
+                await _employeeService.DeleteAsync(foundData).ConfigureAwait(false);
                 return Ok(new { IsSuccess = true });
             }
             catch (Exception ex)

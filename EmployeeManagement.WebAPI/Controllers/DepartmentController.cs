@@ -3,7 +3,6 @@ using EmployeeManagement.Business.Abstract;
 using EmployeeManagement.DataAccess.Domain;
 using EmployeeManagement.WebAPI.Dtos.Department;
 using EmployeeManagement.WebAPI.Extensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagement.WebAPI.Controllers
@@ -29,9 +28,9 @@ namespace EmployeeManagement.WebAPI.Controllers
                 var list = await _departmentService.GetAllAsync().ConfigureAwait(false);
                 if (list.HasValue())
                 {
-                    return Ok(new { IsSuccess = false, data = list.ToList() });
+                    return Ok(new { IsSuccess = true, data = list.ToList() });
                 }
-                return NotFound(new { IsSuccess = false, message = "Departman bulunamadı."});
+                return NotFound(new { IsSuccess = false, message = "Departman bulunamadı." });
             }
             catch (Exception ex)
             {
@@ -40,7 +39,7 @@ namespace EmployeeManagement.WebAPI.Controllers
         }
 
         [HttpPost("get-department-by-id")]
-        public async Task<IActionResult> GetDepartmentById([FromBody]GetDepartmentByIdDto getDepartmentByIdDto)
+        public async Task<IActionResult> GetDepartmentById([FromBody] GetDepartmentByIdDto getDepartmentByIdDto)
         {
             try
             {
@@ -58,7 +57,7 @@ namespace EmployeeManagement.WebAPI.Controllers
         }
 
         [HttpPost("add-department")]
-        public async Task<IActionResult> AddDepartment([FromBody]CreateDepartmentDto createDepartmentDto)
+        public async Task<IActionResult> AddDepartment([FromBody] CreateDepartmentDto createDepartmentDto)
         {
             try
             {
@@ -73,12 +72,12 @@ namespace EmployeeManagement.WebAPI.Controllers
         }
 
         [HttpPost("update-department")]
-        public async Task<IActionResult> UpdateDepartment([FromBody]UpdateDepartmentDto updateDepartmentDto)
+        public async Task<IActionResult> UpdateDepartment([FromBody] UpdateDepartmentDto updateDepartmentDto)
         {
             try
             {
                 var foundData = await _departmentService.GetByIdAsync(updateDepartmentDto.Id).ConfigureAwait(false);
-                if (foundData == null) 
+                if (foundData == null)
                 {
                     return NotFound(new { IsSuccess = false, message = "Departman bulunamadı." });
                 }
@@ -93,14 +92,14 @@ namespace EmployeeManagement.WebAPI.Controllers
         }
 
         [HttpPost("delete-department")]
-        public async Task<IActionResult> DeleteDepartment([FromBody]DeleteDepartmentDto deleteDepartmentDto)
+        public async Task<IActionResult> DeleteDepartment([FromBody] DeleteDepartmentDto deleteDepartmentDto)
         {
             try
             {
                 var foundData = await _departmentService.GetByIdAsync(deleteDepartmentDto.Id).ConfigureAwait(false);
-                if(foundData == null)
+                if (foundData == null)
                 {
-                    return NotFound(new { IsSuccess = false, message = "Departman" });
+                    return NotFound(new { IsSuccess = false, message = "Departman bulunamadı." });
                 }
                 await _departmentService.DeleteAsync(foundData).ConfigureAwait(false);
                 return Ok(new { IsSuccess = true });

@@ -1,0 +1,14 @@
+﻿
+@{
+    ViewData["Title"] = "Logout";
+}
+
+@section Scripts{
+    <script>
+        window.addEventListener('load', function () {
+            setCookie('username','',-1);
+            window.location.href = '@Url.Action("Login","User")';
+        });
+    </script>
+}
+
